@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>Inventory</title>
+{% endblock %}
+
+{% block body %}
+    <h2 class="text-center mt-2">Inventory</h2>
+    <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#add-new-modal">Add New <b>+</b></button>
+    <button type="button" class="btn btn-secondary mb-2" data-bs-toggle="modal" data-bs-target="#search-modal">Search</button>
+
+    <!-- add modal -->
+    <div class="modal fade" id="add-new-modal" tabindex="-1" aria-labelledby="add-new-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="add-new-modalLabel">Add Item</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="" method="post">
+                    {%csrf_token%}
+                    <div class="mb-2">
+                        <label for="item_name" class="form-label">Item Name</label>
+                        <input type="text" name="item_name" class="form-control" required maxlength="100" placeholder="Item name">
+                    </div>
+                    <div class="mb-2">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" step="0.01" name="price" class="form-control" required maxlength="100" placeholder="Price">
+                    </div>
+                    <div class="mb-2">
+                        <label for="qty" class="form-label">Quantity</label>
+                        <input type="number" name="qty" class="form-control" required maxlength="100" placeholder="10">
+                    </div>
+                    <input type="submit" value="Add" class="btn btn-success">
+                </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- view modal -->
+      <div class="modal fade" id="view-modal" tabindex="-1" aria-labelledby="view-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="view-modalLabel">Item</h5>
+              <button type="button" id="close-view" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="" method="post" id="view-form">
+                    {%csrf_token%}
+                    <div class="mb-2">
+                        <label for="item_name" class="form-label">Item Name</label>
+                        <input type="text" id="item_name" name="item_name" class="form-control" required maxlength="100" placeholder="item name">
+                    </div>
+                    <div class="mb-2">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" id="price" step="0.01" name="price" class="form-control" required maxlength="100" placeholder="Price">
+                    </div>
+                    <div class="mb-2">
+                        <label for="qty" class="form-label">Quantity</label>
+                        <input type="number" id="qty"  name="qty" class="form-control" required maxlength="100" placeholder="10">
+                    </div>
+                </form>
+                <div class="modal-footer">
+                    <button type="button" id="btn-delete" class="btn btn-danger">Delete</button>
+                    <button type="button" id="btn-update" class="btn btn-success">Update</button>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- search modal -->
+      <div class="modal fade" id="search-modal" tabindex="-1" aria-labelledby="search-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="search-modalLabel">Search</h5>
+                <button type="button" id="close-search" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'search-inventory' %}" method="POST">
+                        {%csrf_token%}
+                    <div class="mb-2">
+                        <label for="item_name" class="form-label">Item Name</label>
+                        <input type="text" name="item_name" class="form-control" required maxlength="100" placeholder="Item name">
+                    </div>
+                    <button type="submit" class="btn btn-secondary" >Search</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btn-delete" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+          </div>
+        </div>
+
+      <table id="example" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>#ID</th>
+                <th>Item Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if recodes %}
+                {% for recode in recodes %}
+                    <tr id="tr-{{ recode.id }}">
+                        <td id="td-{{ recode.id }}-id"> {{ recode.id }} </td>
+                        <td id="td-{{ recode.id }}-item_name"> {{ recode.item_name }} </td>
+                        <td id="td-{{ recode.id }}-price"> {{ recode.price }} </td>
+                        <td id="td-{{ recode.id }}-qty"> {{ recode.qty }} </td>
+                        <td> <button type="button" onclick="view(id)" class="btn btn-success btn-sm btn-view" id="{{ recode.id }}" data-bs-toggle="modal" data-bs-target="#view-modal">View</button></td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6"><h6 class="text-center">There are no recodes.</h6></td>
+                </tr>
+            {% endif %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>#ID</th>
+                <th>Item Name</th>
+                <th>price</th>
+                <th>Quantity</th>
+                <th>Action</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- pagination-links -->
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-end">
+            {% if recodes.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ recodes.previous_page_number }}" tabindex="-1" aria-disabled="true">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+            </li>
+            {% endif %}
+
+          <li class="page-item"><p class="page-link">{{ recodes.number}}</p></li>
+
+          {% if recodes.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ recodes.next_page_number }}">Next</a>
+            </li>
+          {% else %}
+             <li class="page-item disabled">
+                <a class="page-link" >Next</a>
+             </li>
+          {% endif %}
+        </ul>
+      </nav>
+
+    <script>
+        var data_injected = false;
+        var update_url = "{% url 'update-item' %}";
+        var delete_url = "{% url 'delete-item' %}";
+        var id = 0;
+
+        function view(_id){
+
+            $.ajax({
+                type:'GET',
+                url:update_url,
+                data:{id:_id},
+                success:function(data){
+                    for (key in data){
+                        console.log(key);
+                        if(data.hasOwnProperty(key)){
+                            $('#'+key).val(data[key]);
+                            data_injected = true;
+                            id = _id;
+                        }
+                    }
+                }
+            });
+        }
+
+        $('#btn-update').click(() => {
+                if(data_injected && id != 0){
+                    var trow = $('#tr-'+id);
+                    var form = {
+                        id:id,
+                        item_name:$('#item_name').val(),
+                        price:$('#price').val(),
+                        qty:$('#qty').val(),
+                        csrfmiddlewaretoken: "{{ csrf_token }}"
+                    }
+
+                    $.ajax({
+                        type:'POST',
+                        url:update_url,
+                        data:form,
+
+                        success:(response) => {
+                            $('#close-view').click();
+                            trow.fadeOut(100);
+                            $('#td-'+id+'-item_name')[0].innerText = response['item_name'];
+                            $('#td-'+id+'-price')[0].innerText = response['price'];
+                            $('#td-'+id+'-qty')[0].innerText = response['qty'];
+                            trow.fadeIn(1000);
+                        }
+                    });
+                }
+            });
+
+            $('#btn-delete').click(() => {
+            var confirmed = confirm('Do you want to delete this recod!');
+                if (confirmed && id != 0){
+                    var trow = $('#tr-'+id);
+                    $.ajax({
+                        type:'POST',
+                        url:delete_url,
+                        data:{id:id, csrfmiddlewaretoken:"{{ csrf_token }}"},
+                        success:(data) => {
+                            if(data['message'] == 'success'){
+                                $('#close-view').click();
+                                trow.fadeOut(1000);
+                                trow.remove(1000);
+                            }
+                        }
+                    });
+                }
+            });
+
+        
+    </script>
+{% endblock %}
